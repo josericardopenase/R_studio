@@ -1,0 +1,57 @@
+---
+title: "Practica1"
+output: pdf_document
+---
+
+\section*{##Inicio del ejercicio 1
+Primero investigamos la libreria datasets y buscamos un conjunto de datos que nos resulte
+interesante para realizar su estudio. }
+
+```{r setup}
+search()
+
+library(help=datasets)
+
+library(datasets)
+library(rmarkdown)
+
+data <- chickwts 
+```
+
+\section*{ ##Actividad A
+Usamos names para ver las variables que tiene este dataset. Head para ver el principio de la tabla y tail el final y por ultimo usamos table y summary que nos daran una visión mas amplia del contenido del dataset.}^
+
+```{r}
+names(data)
+head(data)
+tail(data)
+table(data)
+
+summary(data)
+```
+
+\section* {Actividad B
+Usamos la funcion typeof para distinguir los tipos de variables con los que vamos a trabajar. }
+
+```{r}
+typeof(data)
+typeof(data$weight)
+typeof(data$feed)
+```
+
+\section* {
+- Actividad C
+Realizaremos algunos calculos sencillos y de visualización de elementos, como calcular minimos y máximos 
+usar operaciones aritmeticas para calcular medias y mostrar la relación entre el metodo de alimentación de los pollos y su peso en kg usando plot}
+
+```{r}
+media <- sum(data$weight)/length(data$weight);media
+calculo <- (max(data$weight) + min(data$weight))/2;calculo
+
+plot( data$feed, data$weight, 
+      main="Peso en funcion del metodo de alimento",
+      ylab="kilograms",
+      xlab="feeding type",
+      col="green")
+```
+
