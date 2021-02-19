@@ -1,0 +1,232 @@
+---
+title: "Práctica4"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# a) Estudiar la influencia del tamaño del melanoma en el tiempo de supervivencia
+
+Antes de realizar este estudio lo primero que hay que hacer es inspeccionar los datos con los que estamos trabajando. Para ello como estamos acostumbrados usaremos head, tail y summary.
+
+```{r}
+#CARGAMOS LOS DATOS MELANOMA DEL DIRECTORIO
+setwd("~/Escritorio/R/Practica 1")
+melanoma <- read.table("Datos_Melanoma.txt",sep = "\t", header = TRUE)
+
+#INSPECCIONAMOS LA TABLA DE DATOS
+
+head(melanoma)
+tail(melanoma)
+summary(melanoma)
+```
+
+Una vez realizado esto comenzaremos el estudio. Primero mostraremos gráficamente usando plot una gráfica muy sencilla para tener una vista previa
+
+```{r}
+plot(melanoma$grosor, melanoma$tiempo, 
+     xlab="Grosor melanoma", 
+     ylab="Tiempo de supervivencia",
+     main="Tiempo de supervivencia en funcion del grosor del melanoma")
+```
+
+Desde aqui podemos observar ya que el tamaño del melanoma parece tener cierta relación con el tiempo de supervivencia, sigamos indagando. Para ello primero observemos los diferentes tamaños que tenemos. Y a su vez dividamos en grupos los mismos desde 0 mm a 20mm de 5 en 5 usando la funcion cut. De esta manera podremos estudiar mas detalladamente su relación
+
+```{r}
+sort(unique(melanoma$grosor))
+
+melanoma_agrupado <- cut(melanoma$grosor, breaks=seq(0, 20, 5), include.lowest=TRUE, right=TRUE)
+
+```
+
+Por ultimo creamos una tabla usando los datos del tamaño acotado. Por ultimo mostraremos en una gráfica la relacion entre el tamaño y el tiempo
+
+
+```{r}
+melanoma_agrupado_edad <- cut(melanoma$edad, breaks=seq(0, 100, 15), include.lowest=TRUE, right=TRUE)
+
+tabla_agrupado <- data.frame(size = melanoma_agrupado, tiempo = melanoma$tiempo, ulceracion = melanoma$ulceracion, sexo=melanoma$sexo, edad=melanoma_agrupado_edad)
+
+plot(tabla_agrupado$size, tabla_agrupado$tiempo)
+```
+
+Aqui ya vemos claramente que de 0 a 5mm la tasa de mortalidad por lo general es bastante mas alta que en el resto, llegando a de 10mm a 15mm ser la menor. También cabe destacar que por encima de 15 hay muy pocos datos que se hayan tomado por lo tanto sera dificil de estudiar este caso.
+
+Continuemos calculando las medias, medianas y desviaciones típicas que nos daran mas información.
+
+```{r}
+periodos <- unique(tabla_agrupado$size)
+
+#CALCULAMOS MEDIAS DE DURACION EN CADA PERIODO
+
+#las medianas indican que la gran diferencia
+#se nota a partir de los 10mm de grosor
+#Aunque los datos la mayoría se tomaron de melanomas menores a 5mm
+mean(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[1]]) 
+mean(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[2]])
+mean(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[3]])
+mean(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[4]])
+
+#CALCULAMOS LAS MEDIANAS EN CADA PERIODO
+median(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[1]])
+median(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[2]])
+median(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[3]])
+median(tabla_agrupado$tiempo[tabla_agrupado$size == periodos[4]])
+```
+
+Como podemos observar existe diferencia sustancial Entre los tamaños mayores y menores aunque también observamos un fenomeno curioso la media de 0 a 5 mm es menor que de 5 a 10 mm esto puede ser cierto sin embargo cabe destacar la gran dispersión que existe de 5 a 10mm en cuanto a los datos se refiere y la gran concentración en cuanto de 0 a 5mm. También podemos observar como la media de 15 a 20mm es mayor (aunque no mucho) a la de 10 a 15mm esta mustra no la consideraría representativa puesto que hay muy pocos datos que estudiar en el último caso. 
+
+A su vez es importante analizar la cantidad de muestras de cada grupo que tenemos 
+
+```{r}
+#CONTAMOS LA CANTIDAD DE DATOS RECOGIDOS DE CADA
+length(melanoma$grosor[melanoma$grosor < 5]) #demasiados datos de este
+length(melanoma$grosor[melanoma$grosor > 5]) #muy poocos de este
+```
+
+Como podemos observar 173 de los casos son de personas con melanomas por debajo de 5mm y 32 e por encima de 5mm. Debido a la desigualdad en la cantidad de datos entre grupos podemos considerar que el estudio no ha sido realizado homogeneamente ya que tenemos mas individuos en unos estratos que en otros. Esto puede ser un problema a la hora de sacar conclusiones. 
+
+A pesar de lo dicho anteriormente podemos observar claramente que mientras menor sea el tamaño del melanoma mas esperanza de vida tras la operación se tendrá esto lo muestran tanto las gráficas como la amplia diferencia en las medias de los estratos por debajo de 10mm y por encima de 10mm.
+
+## b) Exlpicar las diferencias sustaantivas entre los casos que conlleven un tamaño inferior a 10mm y los que tienen un tamaño mayor.
+
+Como hemos dicho anteriormente existe una gran diferencia entre los datos tomados en los anteriores grupos sin embargo merece la pena realizar este estudio. Para ello primero dividiremos los datos en un grupo de 0 a 10mm y otro de 10 a 20mm. Mostraremos usando plot ambos.
+
+```{r}
+melanoma_agrupado_2 <- cut(melanoma$grosor, breaks=seq(0, 20, 10), include.lowest=TRUE, right=TRUE)
+
+tabla_agrupado <- data.frame(size = melanoma_agrupado_2, tiempo = melanoma$tiempo, ulceracion = melanoma$ulceracion, sexo=melanoma$sexo, edad=melanoma_agrupado_edad)
+
+
+plot(tabla_agrupado$size, tabla_agrupado$tiempo)
+```
+
+Como podemos observar en la gráfica el primer grupo tiene una gran diferencia en cuantoa espernza de vida respecto el segundo. 
+
+```{r}
+mean(melanoma$tiempo[melanoma$grosor < 10]) 
+mean(melanoma$tiempo[melanoma$grosor > 10]) 
+
+```
+A su vez como podemos observar en las medias esta diferencia sigue siendo considerable. Aunque otro factor que merece la pena estudiar es la media del grosor de ambos grupos.
+
+```{r}
+mean(melanoma$grosor[melanoma$grosor < 10]) 
+mean(melanoma$grosor[melanoma$grosor > 10]) 
+```
+Como podemos observar en nuestro primer grupo la mayoría de datos son bastante alejados a los 10mm, esto vuelve a demostrar lo que hablabamos antes, las muestras no son homogeneas.
+
+Aun asi podemos concluir que la diferencia de esperanza de vida tras la operación en los valores por debajo de 10mm y por encima es abismal.
+
+## c) Estudiar el efecto de la edad en la supervivencia a la enfermedad tras la operación
+
+
+Para llevar a cabo esta tarea realizaremos un estudio muy parecido al que hemos realizado anteriormente. Primero mostraremos por pantalla un gráfico que nos muestre por encima los datos.
+
+```{r}
+plot(melanoma$edad, melanoma$tiempo, 
+     xlab="Edad de la persona", 
+     ylab="Tiempo de supervivencia",
+     main="Tiempo de supervivencia en funcion de la edad del paciente")
+```
+
+El gráfico mostrado es complicado de estudiar debido a que los datos estan muy dispersos, por ello crearemos grupos de edad como realizamos anteriormente con los tamaños.
+
+```{r}
+melanoma_agrupado_edad <- cut(melanoma$edad, breaks=seq(0, 100, 15), include.lowest=TRUE, right=TRUE)
+
+
+sort(unique(melanoma$edad))
+
+melanoma_agrupado_frame <- na.omit(data.frame(edad = melanoma_agrupado_edad, tiempo = melanoma$tiempo))
+
+
+plot(melanoma_agrupado_frame$edad, melanoma_agrupado_frame$tiempo)
+```
+Ahora podemos observar mas claramente los diferentes datos y como vemos tenemos una gráfica que muestra como mientras mas edad se tenga menos supervivencia se tendrá aunque de 0 a 15 años, aunque la esperanza de vida sea mayor a los estratos mas adultos, se tiene menores posibilidades de sobrevivir que de 15 a 30 años.
+
+Y como bien se menciona antes el grupo con mayor probabilidad de sobrevivir mas tiempo después de la operación son aquellos de 15 a 30 años.
+
+Continuemos calculando las medaias de todos los grupos
+
+```{r}
+m_tp_vida_edad = c()
+
+for(x in 1:length(unique(melanoma_agrupado_edad))){
+  m_tp_vida_edad[x] = mean(melanoma_agrupado_frame$tiempo[melanoma_agrupado_frame$edad == unique(melanoma_agrupado_edad)[x]])
+}
+
+m_tp_vida_edad <- m_tp_vida_edad
+
+mean_edad_mortalidad <- na.omit(data.frame(edad = unique(melanoma_agrupado_edad), media_vida = m_tp_vida_edad))
+
+library(knitr)
+
+kable(mean_edad_mortalidad)
+```
+
+Como observamos en la tabla mostrada anteriormente se ve claramente como mientras mayor sea la edad menor sera el tiempo de supervivencia tras la operación. El grupo de 75 a 90 años se muestra claramente como el que mas complicaciones tiene, siendo el grupo de 15 a 30 años el que menos como dijimos anteriormente.
+
+
+## d) Analizar si la presencia y diagnóstico de ulceración afecta a los resultados a) y b)
+
+
+```{r}
+#CON ULCERACION
+
+plot(tabla_agrupado$size[tabla_agrupado$ulceracion == 1], tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 1], main="Con ulceracion", xlab="tamaño melanoma", ylab="tiempo de vida")
+
+#SIN ULCERACION
+plot(tabla_agrupado$size[tabla_agrupado$ulceracion == 0], tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 0] , main="Sin ulceracion", xlab="tamaño melanoma", ylab="tiempo de vida")
+
+#CON ULCERACION
+plot(tabla_agrupado$edad[tabla_agrupado$ulceracion == 1], tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 1], , main="Con ulceracion", xlab="Edad de la persona", ylab="tiempo de vida")
+
+#sin ulceracion
+plot(tabla_agrupado$edad[tabla_agrupado$ulceracion == 0], tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 0], main="Sin ulceracion", xlab="edad de la ", ylab="tiempo de vida")
+
+#CON ULCERACION
+mean(tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 1])
+median(tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 1])
+length(melanoma$tiempo[melanoma$ulceracion == 1])
+
+
+#SIN ULCERACION
+mean(tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 0])
+median(tabla_agrupado$tiempo[tabla_agrupado$ulceracion == 0])
+length(melanoma$tiempo[melanoma$ulceracion == 0])
+```
+
+Como podemos observar en las gráficas expuestas la ulceración afecta negativamente a la supervivencia tras la enfermedad, mostrando no solo datos de mayor tiempo de supervivencia sino mas concentrados cuando no existe la ulceración, tanto para personas de mayor y menor edad y melanomas de menor y mayor tamaño.
+
+
+## e) ¿Existe alguna diferencia de los resultados si se trata de un hombre o una mujer?
+
+Para averiguar esto realizaremos lo mismo que en el anterior apartado.
+
+```{r}
+#HOMBRE
+plot(tabla_agrupado$size[tabla_agrupado$sexo == 0], tabla_agrupado$tiempo[tabla_agrupado$sexo == 0], main="Tamaño respecto tiempo de supervivencia en mujeres")
+plot(tabla_agrupado$edad[tabla_agrupado$sexo == 0], tabla_agrupado$tiempo[tabla_agrupado$sexo == 0],  main="edad respecto tiempo de supervivencia en mujeres")
+
+#MEDIAS PARA LAS MUJERES
+mean(tabla_agrupado$tiempo[tabla_agrupado$sexo == 0])
+median(tabla_agrupado$tiempo[tabla_agrupado$sexo == 0])
+length(melanoma$tiempo[melanoma$sexo == 0])
+
+
+
+plot(tabla_agrupado$size[tabla_agrupado$sexo == 1], tabla_agrupado$tiempo[tabla_agrupado$sexo == 1],  main="Tamaño respecto tiempo de supervivencia en hombres")
+plot(tabla_agrupado$edad[tabla_agrupado$sexo == 1], tabla_agrupado$tiempo[tabla_agrupado$sexo == 1], main="edad respecto tiempo de supervivencia en hombres")
+
+#MEDIAS PARA LOS HOMBRES
+mean(tabla_agrupado$tiempo[tabla_agrupado$sexo == 1])
+median(tabla_agrupado$tiempo[tabla_agrupado$sexo == 1])
+length(melanoma$tiempo[melanoma$sexo == 1])
+```
+Como podemos observar en la gráfica del tamaño respecto al tiempo de supervivencia, las mujeres mantienen una esperanza de vida bastante parecida en todos los tamaños de melanomas, cosa totalmente diferente en hombres mostrando que si el tamaño es inferior a 10mm la sobreviven mas tiempo que las mujeres sin embargo cuando es por encima de 10mm decrece drásticamente.
+
+
+En cuanto a la edad se ve que los hombres mas jovenes sobreviven mas que las mujeres y los hombres de mayor edad (por encima de los 60 años) igual. Aunque las mujeres de edad entre 15 y 45 años sobreviven mas que los hombres.
+
+Aun asi de media se ve que las mujeres sobreviven mas tiempo que los hombres, aunque la diferencia no es sustancial.

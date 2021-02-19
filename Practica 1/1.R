@@ -4,6 +4,7 @@ library(help=datasets)
 
 library(datasets)
 library(rmarkdown)
+library(knitr)
 
 data <- chickwts 
 
@@ -30,4 +31,15 @@ plot( data$feed, data$weight,
       xlab="feeding type",
       col="green")
 
+media_pesos<-c()
+
+for(x in 0:length(unique(data$feed))){
+    
+  media_pesos[x] = mean(data$weight[data$feed == unique(data$feed)[x]])
+    
+}
+
+tabla_medias = data.frame(feed = unique(data$feed), mean_weight = media_pesos )
+
+kable(tabla_medias)
 

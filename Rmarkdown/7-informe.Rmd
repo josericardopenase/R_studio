@@ -1,0 +1,174 @@
+---
+title: "Práctica7"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Antes de empezar
+
+Para realizar el setup correspondiente a esta práctica agregaremos multiples librererias que necesitaremos por una parte ggplot2 para realizar las gráficas, por otra parte knitr que nos agregara comandos tan útiles como kable, y por último tidyr que nos permitirá distribuir las tablas de datos y obtener estadísticas mas complejas. 
+
+```{r setup}
+setwd("~/Escritorio/R/Datasets")
+
+educacion <- read.table("Datos_hsb.txt",sep = ",", header = TRUE, fileEncoding = "latin1")
+
+library(ggplot2)
+library(knitr)
+library(tidyr)
+
+```
+
+## a) Calcular medias de progreso por las distintas categorías  razonar posibles conclusiones
+
+Para calcular las diferentes medias haremos uso de las ya conocidas funciones mean, y aggregate de esa manera podremos crear una tabla con todas ellas de manera sencilla y visual.
+
+```{r}
+  
+p <- aggregate(cbind(P_Lectura, P_Escritura, P_Matematicas, P_Sociales, P_Ciencias)~Estatus_Socieconomico, data = educacion, mean, na.rm=TRUE)
+kable(p)
+
+s <- aggregate(cbind(P_Lectura, P_Escritura, P_Matematicas, P_Sociales, P_Ciencias)~Tipo_Programa, data = educacion, mean, na.rm=TRUE)
+kable(s)
+
+p <- aggregate(cbind(P_Lectura, P_Escritura, P_Matematicas, P_Sociales, P_Ciencias)~Estatus_Socieconomico+Raza+Sexo, data = educacion, mean, na.rm=TRUE)
+kable(p)
+```
+ A simple vista con las medias ya podemos empezar a establecer varias relaciones entre los datos. Primero observamos que claramente el estatus económico de el alumno influye de manera drástica en las puntuaciones, siendo quellos con estatus alto los que liderán la lista seguiods por los de medio y por último los de estatus bajo.
+ 
+  Respecto al tipo de programa pasa algo bastante parecido aquellos que estan en preparatoria académica ostentan mas puntuación en todos los campos que los que estan en un programa general seguidos de el Vocacional/técnico.
+  
+  No mencionaré los casos de sexo y raza ya que en el apartado D realizaremos un estudio mas exaustivo de estos casos haciendo referencia a las medias citadas arriba.
+  
+## b) Evaluar la influencia del centro en los resultados de aprendizaje de la época.
+
+Para ello usaremos las herramientas brindadas por ggplot2 tanto el boxplot, como el barplot. A su vez también usaremos la librería tidyr para realizar gráficos mas detallados con todas las asignaturas.
+
+```{r}
+ educacion_escuela <- aggregate(cbind(P_Lectura, P_Escritura, P_Matematicas, P_Sociales, P_Ciencias)~Tipo_Escuela, data = educacion, mean, na.rm=TRUE)
+  kable(educacion_escuela)
+  
+  centros <- unique(educacion$Tipo_Escuela); centros
+  
+  ggplot(data = educacion, mapping = aes(x = Tipo_Escuela, y = P_Ciencias)) + geom_boxplot() + aes(colour=Sexo)
+  
+  ggplot(data = educacion, mapping = aes(x = Tipo_Escuela, y = P_Matematicas)) + geom_boxplot() + aes(colour=Sexo)
+  
+  ggplot(data = educacion, mapping = aes(x = Tipo_Escuela, y = P_Lectura)) + geom_boxplot() + aes(colour=Sexo)
+  
+  ggplot(data = educacion, mapping = aes(x = Tipo_Escuela, y = P_Escritura)) + geom_boxplot() + aes(colour=Sexo)
+  
+  ggplot(data = educacion, mapping = aes(x = Tipo_Escuela, y = P_Sociales)) + geom_boxplot() + aes(colour=Sexo)
+  
+```
+
+  Ya observando las medias nos damos cuenta que en los centros privados las puntuaciones obtenidas son bastante mayores y si nos fijamos en los boxplot mostrados (donde no solo se muestra la diferencia de centros sino también de sexos) nos podemos fijar que no solo las medias son mejores sino que también existe mucha menos dispersión de los datos, por lo tanto las notas en las escuelas privadas la mayoría seran positivas al contrarío que en la pública que hay gran diversidad.
+
+  Comencemos analizando las puntuaciones en ciencias: Primero podemos observar que las mujeres ostentan notas inferiores a los hombres tanto en la educación pública y privada. A su vez también observamos lo comentado anteriormente las notas en los centros privados son mas concentradas siendo la mayoría altas y en el público habiendo gran variedad. 
+    
+  En matemáticas en el privado es prácticamente igual a las ciencias los hombres tienen mejores puntuaciones que las mujeres y su dispersión es inferior. Sin embargo en el público es al contrario las mujeres poseen mejores notas que los hombres en promedio.
+  
+  En lectura la gráfica nos muestra información muy parecida que en ciencias, hombres mejor puntuación media y centro privado teniendo gran ventaja respecto al público.
+    
+  Sin embargo tanto en escritura y sociales parece que las diferencias entre sexos disminuyen llegando denuevo en la escuela pública superar las muejeres a los hombres y en las privadas igualarlos, aunque sigue siendo notoría la diferencia entre los centros privados que se mantienen mas arriba de media y con menos dispersión y los públicos. En escritura pasa algo similar lo que esta vez las mujeres mantienen mejores calificaciones de media siendo no tan notoría la diferencia respecto a los hombres en la escuela privada sin embargo en la pública teniendo una diferencia considerable.
+    
+  Dado lo analizado anteriormente podemos llegar a dos conclusiones: la primera que en los centros privados las notas son mejores que los públicos en promedio y ostentan menor dispersión entre las notas de los alumnos, y segundo que las mujeres tienen mejores calificaciones en escritura y asignaturas sociales, y a su vez los hombres le sacan ventaja en matemáticas, ciencias y lectura.
+    
+  En la parte inferior podemos encontrar gráficos mas generales que muestran también lo citado anteriormente.
+  
+```{r}
+ educacion2 <- educacion %>%
+    gather(Campo,Value,  P_Ciencias, P_Escritura, P_Lectura, P_Matematicas, P_Sociales, -Tipo_Escuela)
+  
+  stat1 <- ggplot(educacion2, aes(x = Campo, y =Value , fill=Tipo_Escuela)) + geom_boxplot(position="dodge")
+  
+  stat1 + labs(title="Nota de las asignaturas en escuela privada y publica", x = "Asignaturas", y = "Nota") 
+  
+  #using plot$out for outliers #str analisis tipos de datos
+  
+  
+  educacion2 <- educacion_escuela %>%
+    gather(Campo,Value,  -Tipo_Escuela)
+  
+  
+  stat2 <- ggplot(educacion2, aes(x = Campo, y =Value , fill=Tipo_Escuela)) + geom_col(position="dodge")
+  
+  stat2 + labs(title="Medias de asignaturas en escuela privada y publica", x = "Asignaturas", y = "Nota media") 
+  
+```
+    
+    
+## c) Estudiar posibles relaciones entre la capacidad de lectura y el aprendizaje de otras disciplinas
+   Para ello compararemos la puntuación de lectura y la puntuación en otras asignaturas para comprobar si existe algún tipo de relación lineal entre la lectura y otros campos.
+   
+```{r}
+g0 <- ggplot(data = educacion, aes(x = P_Lectura)) + 
+xlab("puntuacion lectura ( 0-100)")+
+ggtitle("Relacion entre la capacidad de lectura y aprendizaje en otras materias")
+
+g0+aes(y=P_Escritura)+
+geom_point(aes(shape=Estatus_Socieconomico, colour=Sexo))+
+geom_smooth(method="lm")+
+ylab("Puntuacion de Escritura (0-100)")
+
+g0+aes(y=P_Sociales)+
+geom_point(aes(shape=Estatus_Socieconomico, colour=Sexo))+
+geom_smooth(method="lm")+
+ylab("Puntuacion de Sociales (0-100)")
+
+g0+aes(y=P_Ciencias)+
+geom_point(aes(shape=Estatus_Socieconomico, colour=Sexo))+
+geom_smooth(method="lm")+
+ylab("Puntuacion de Ciencias (0-100)")
+
+g0+aes(y=P_Matematicas)+
+geom_point(aes(shape=Estatus_Socieconomico, colour=Sexo))+
+geom_smooth(method="lm")+
+ylab("Puntuacion de Matematicas (0-100)")
+
+```
+   Los resultados con bastante reveladores, si bien esperaríamos que la lectura estubiera bastante relacionada con la escritura cosa que se ve en el gráfico que relaciona ambos, a su vez el resto de materias también tienen una fuerte relación incluidas las mas númericas como matemáticas o ciencias.
+   
+   Observamos esto en todos los sexos y estatus económicos mostrados en la leyenda. Podemos concluir que aquellos alumnos que tienen buena puntuación en lectura también la tendrán en el resto de asignaturas o almenos le ayudará a tenerla.
+   
+   
+## d) Visualizar si el sexo o la raza de origen en 1980 tenían influencias significativas en el nivel de aprendizaje
+
+  Para ello igual que en el apartado b realizaremos gráficas usando ggplot y tydir de forma mas general y visual usando tanto boxplot como barplots. A su vez también calcularemos tablas de medias usando aggregate. De esa forma podremos llegar a mejores conclusiones.
+  
+```{r}
+#sexo
+educacion2 <- educacion %>%
+gather(Campo,Value,  P_Ciencias, P_Escritura, P_Lectura, P_Matematicas, P_Sociales, -Sexo)
+
+stat1 <- ggplot(educacion2, aes(x = Campo, y =Value , fill=Sexo)) + geom_boxplot(position="dodge")
+stat1 + labs(title="Nota de las asignaturas en escuela privada y publica", x = "Asignaturas", y = "Nota") 
+
+p <- aggregate(cbind(P_Lectura, P_Escritura, P_Matematicas, P_Sociales, P_Ciencias)~Sexo, data = educacion, mean, na.rm=TRUE)
+kable(p)
+
+
+#raza
+educacion2 <- educacion %>%
+gather(Campo,Value,  P_Ciencias, P_Escritura, P_Lectura, P_Matematicas, P_Sociales, -Raza)
+
+stat1 <- ggplot(educacion2, aes(x = Campo, y =Value , fill=Raza)) + geom_boxplot(position="dodge")
+stat1 + labs(title="Nota de las asignaturas en diferentes razas", x = "Asignaturas", y = "Nota") 
+
+p <- aggregate(cbind(P_Lectura, P_Escritura, P_Matematicas, P_Sociales, P_Ciencias)~Raza, data = educacion, mean, na.rm=TRUE)
+kable(p)
+
+```
+  En primer lugar observamos la gráfica general que relaciona asignaturas con su correspondiente nota en hombres y mujeres.
+  
+  En este gráfico no distingue entre centros privados y públicos a si que veremos una prespectiva diferente a la vista en el apartado b. Primero observamos como los hombres sacan mejores puntuaciones en Ciencias con gran diferencia tanto en promedio como en las mejores notas.
+  
+  A su vez en lectura también ocurre lo mismo pero de forma menos remarcada sin embargo se ve como aquellos que obtienen las notas mas altas son hombres, aunque en promedio no se diferencian tanto un grupo de otro.
+  
+  Igual para en matemáticas, si bien parece que las mujeres en promedio tienen mejores notas aquellos que mas destacan son hombres. En sociales y escritura pasa todo lo contrario
+las mujeres no solo destacan mas sino también se ven superiores a los hombres en promedio, siendo sociales aquella asignatura que mas diferencia hay entre mujeres y hombres, mostrandose estas primeras superiores de forma considerable en promedio. 
+   
+   En cuanto a las razas no hay tanta variedad aquellos con mejores puntuaciones son o bien de raza asiática o bien de raza blanca, mostrando una amplia brecha entre la raza hispana y negra. Siendo esto asi en ciencias, escritura, lectura y matemáticas. En algunas asignaturas los asiáticos tienen mejores puntuaciones y en otra los blancos aunque con poca diferencia.
+   
+   Aquella asignatura que mantiene mas igualada la situación es sociales donde a pesar de que las medias para los blancos y asíaticos siguen siendo superiores no lo son por mucho a los hispanos y negros.

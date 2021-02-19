@@ -90,3 +90,39 @@ boxplot(p$mortalidad_infantil)
 
 #SE PUEDE OBSERVAR CLARAMENTE QUE LA RENTA PER CAPITA Y LA MORTALIDAD
 #INFANTIL ESTAN FUERTEMENTE RELACIONADAS.
+divisiones_renta <-  cut(p$renta, breaks=seq(0, 3346, 500), include.lowest=TRUE, right=TRUE)
+
+boxplot(mortalidad_infantil~renta, data = p, main="mortalidad infantil por rpc", xlab="renta per capita", ylab ="mortalidad infantil")
+
+p$pais[p$renta]
+p$renta[p$pais == "Saudi.Arabia"]
+
+##F)
+
+datos2 <- data.frame(renta = p$renta[p$productor_petroleo == "no"], mortalidad_infantil = p$mortalidad_infantil[p$productor_petroleo == "no"])
+
+plot(datos2$renta, datos2$mortalidad_infantil)
+
+mean(datos2$mortalidad_infantil)
+mean(p$mortalidad_infantil[p$productor_petroleo=="yes"])
+
+mean(datos2$renta)
+mean(p$renta[p$productor_petroleo=="yes"])
+
+datos_africa <- data.frame(pais = p$pais[p$region=="Africa"],renta = p$renta[p$region=="Africa"], mortalidad_infantil = p$mortalidad_infantil[p$region=="Africa"])
+
+
+boxplot(mortalidad_infantil~renta, data = datos_africa, main="mortalidad infantil por rpc áfrica", xlab="renta per capita", ylab ="mortalidad infantil")
+
+plot( datos_africa$renta, datos_africa$mortalidad_infantil,main="mortalidad infantil por rpc áfrica", xlab="renta per capita", ylab ="mortalidad infantil")
+
+datos_africa$pais[datos_africa$renta > 800]
+
+mortalidad_infantil_sum = c()
+
+for(x in 0:length(unique(p$region))){
+        mortalidad_infantil_sum[x] = sum(p$mortalidad_infantil[p$region==unique(p$region)[x]])
+}
+
+pie(mortalidad_infantil_sum, labels = unique(p$region))
+

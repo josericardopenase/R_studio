@@ -1,0 +1,105 @@
+---
+title: "Ejercicio 3. Lab 4"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## setup)
+
+```{r}
+setwd("~/Escritorio/R/Datasets")
+library(knitr)
+library(ggplot2)
+datos_c <- read.table("Tiempo_Clima.txt", sep="\t", dec = ".", header=T)
+attach(datos_c)
+kable(datos_c[c(1:3, 150:152, 1300:1304), ])
+
+```
+
+## Visualizar con R básico y con ggplot2 los cambios de temperatura máxima y mínima en función del mes de año.
+
+Para ello realizaremos una primera visión conjunta usando el paquete de R básico, realizaremos dos plot de las temperaturas máximas y las mínimas con una leyenda explicativa (se pueden apreciar dos, una mas personalizada y otra menos). Y a continuación usaremos ggplot2 para reproducir la misma situación.
+
+```{r}
+
+Mes<-factor(Mes)
+plot(Mes, T_Maxima, col="blue",  xlab="Meses", ylab="Temp. maximas y minimas");grid()
+plot(Mes, T_Minima, col="red", add=T)
+legend(10.5, 34.5, legend=c("Maxima", "Minima"), cex=0.85, text.col=c("blue", "red"))
+
+```
+
+
+```{r}
+
+estacion <- heat.colors(12)
+paleta_sel <- c(11,10,8,5,3,1,2,3,5,8,10,11)
+plot(Mes, T_Maxima, col=estacion[paleta_sel], xlab="Meses", ylab="Temperatura", notch=T); grid()
+plot(Mes, T_Minima, col="lightblue", notch=T, add=T)
+
+
+```
+
+```{r}
+g<- ggplot(datos_c, aes(x=Mes, y=T_Maxima))
+g+geom_boxplot(aes(group=Mes), col="red")+
+  ylab("Temperaturas max. y min. diaria")+xlab("Meses")+
+  theme(axis.text=element_blank())+
+  geom_boxplot(aes(y=T_Minima, group=Mes), col="blue")
+```
+## Idem a) para el nivel de precipitaciones a lo largo de los meses de cada año.
+
+Para ello lo primero que realizaremos es tratado de datos, usando la función par, la función aggregate... Y a continuación mostraremos usando R básico las precipitaciones a lo largo de los meses.
+
+```{r}
+par(mfrow=(c(1,1)))
+max_p <- aggregate(Precipitacion~Year, datos_c, max);max_p
+plot(max_p$Year, max_p$Precipitacion, ylab="Precipitaciones maximas anuales", xlab="A;os", col="red", type="b"); grid()
+```
+## c) Crear un data frame con los temperaturas máximas y mínimas por año.
+
+Lo primero que realizaremos es el data frame usando el comando aggregate y creando un nuevo data frame con data.frame. Por último lo mostraremos usando R básico.
+
+```{r}
+
+
+max_temp <- aggregate(T_Maxima~Year, datos_c, max)
+min_temp <- aggregate(T_Minima~Year, datos_c, min)
+temp <- data.frame(Year=unique(Year), T_Maxima=max_temp[,2], T_Minima=min_temp[,2])
+kable(temp)
+
+
+Year<- factor(Year)
+par(mfrow=c(1,2))
+plot(Year, T_Maxima, ylab="Maxima temp", xlab="A;os 1987-2005", col="red", notch=TRUE);grid()
+plot(Year, T_Minima,  ylab="Minima temp. diaria", xlab="A;os 1987-2000", col="red", notch=TRUE); grid()
+```
+
+
+## d) Utilizar la función lm() para ver la tendencia e influencia del cambio de temperaturas a lo largo de los años. Analizar si existe una relación con el fenómeno del calentamiento global. Razonar y justificar las respuestas.
+
+Se puede observar gracias a las aproximaciones realizadas y los datos mostrados que la temperatura a lo largo de los años esta aumentando, parece que es un cambio poco drástico y aun así no tenemos suficientes datos para dar una opinión rigurosa y certera. Sin embargo un cambio en la temperatura, por muy pequeño que sea, influye de forma bestial en la biosfera terrestre. También cabe mencionar que a lo largo de los años el aumento de la población humana, el uso de recursos fósiles que contienen dióxido de carbono, etc... puede haber influido significativamente.
+
+
+```{r}
+
+par(mfrow=c(1,1))
+plot(max_temp$Year, max_temp$T_Maxima, ylab="Temp. maximas", xlab="A;os", col="red", type="b");grid()
+mod<- lm(max_temp$T_Maxima~max_temp$Year)
+abline(mod, col="green", lwd=2)
+
+
+g2<-ggplot(max_temp, aes(x=Year, y=T_Maxima))+ylab("Temp. max")+xlab("A;os")
+g2+geom_line(col="red")+geom_smooth(method="lm")+geom_point()
+
+g2<-ggplot(max_temp, aes(x=Year, y=T_Maxima))+
+  ylab("Temp C anuales")+xlab("A;os")
+g3<-g2+geom_line(col="yellow")+geom_point()
+g4<-g3+geom_line(aes(x=min_temp$Year, y=min_temp$T_Minima), col="red")+
+  geom_point(aes(x=min_temp$Year, y=min_temp$T_Minima));g4
+
+detach(datos_c)
+
+```
+

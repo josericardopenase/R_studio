@@ -1,11 +1,13 @@
 ---
-title: "Practica1"
-output: pdf_document
+title: "Práctica1"
+output:
+  pdf_document: default
+  word_document: default
 ---
 
-\section*{##Inicio del ejercicio 1
+Inicio del ejercicio 1
 Primero investigamos la libreria datasets y buscamos un conjunto de datos que nos resulte
-interesante para realizar su estudio. }
+interesante para realizar su estudio.
 
 ```{r setup}
 search()
@@ -14,24 +16,25 @@ library(help=datasets)
 
 library(datasets)
 library(rmarkdown)
-
+library(knitr)
 data <- chickwts 
 ```
 
-\section*{ ##Actividad A
-Usamos names para ver las variables que tiene este dataset. Head para ver el principio de la tabla y tail el final y por ultimo usamos table y summary que nos daran una visión mas amplia del contenido del dataset.}^
+Actividad A
+Usamos names para ver las variables que tiene este dataset. Head para ver el principio de la tabla, tail el final, str para visualizar los tipos de datos que contiene y por ultimo usamos table y summary que nos daran una visión mas amplia del contenido del dataset.
 
 ```{r}
 names(data)
 head(data)
 tail(data)
 table(data)
-
+str(data)
 summary(data)
 ```
 
-\section* {Actividad B
-Usamos la funcion typeof para distinguir los tipos de variables con los que vamos a trabajar. }
+Actividad B
+Usamos la función typeof para distinguir los tipos de variables con los que vamos a trabajar. 
+
 
 ```{r}
 typeof(data)
@@ -39,19 +42,33 @@ typeof(data$weight)
 typeof(data$feed)
 ```
 
-\section* {
-- Actividad C
-Realizaremos algunos calculos sencillos y de visualización de elementos, como calcular minimos y máximos 
-usar operaciones aritmeticas para calcular medias y mostrar la relación entre el metodo de alimentación de los pollos y su peso en kg usando plot}
+Actividad C
+Realizaremos algunos cálculos sencillos y de visualización de elementos, como calcular mínimos y máximos 
+usar operaciones aritméticas para calcular medias y mostrar la relación entre el método de alimentación de los pollos y su peso en kg usando plot. Si bien para realizar la tabla podría haber usado el comando aggregate he decidido decantarme por realizar un bucle para darle algo mas de complejidad (aunque estos no suelen ser usados en R debido a su bajo rendimiento).
 
 ```{r}
 media <- sum(data$weight)/length(data$weight);media
 calculo <- (max(data$weight) + min(data$weight))/2;calculo
 
 plot( data$feed, data$weight, 
-      main="Peso en funcion del metodo de alimento",
+      main="Peso en funcion del método de alimento",
       ylab="kilograms",
       xlab="feeding type",
       col="green")
+
+
+
+media_pesos<-c()
+
+for(x in 0:length(unique(data$feed))){
+    
+  media_pesos[x] = mean(data$weight[data$feed == unique(data$feed)[x]])
+    
+}
+
+tabla_medias = data.frame(feed = unique(data$feed), mean_weight = media_pesos )
+
+kable(tabla_medias)
 ```
 
+Como observamos tanto en la gráfica plot como en la kable de medias queda claro que los métodos que mas aumentan la masa de los pollos son los basados en la caseina y girasoles, siendo a su vez los que menos los basados en la haba.

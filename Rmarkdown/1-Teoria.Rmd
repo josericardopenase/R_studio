@@ -1,0 +1,154 @@
+---
+title: "1-Teoría"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## SETUP Y LIBRERIAS
+
+Para la realización de la práctica cargaremos todos los datos usando und dataframe y a su vez importaremos la librería ggplot que se usara mas adelante
+
+```{r setup, include=FALSE}
+
+
+library(ggplot2)
+barrio_b1 <- c(941 ,1086 ,1024, 1278, 1183, 1419, 1384, 1318, 1140, 1170,
+               1137, 1327, 1225, 1121, 1114, 1088, 1086, 1500 ,910 ,1750)  
+
+
+barrio_b2 <- c(959, 1080, 2101, 1265, 1247, 1475, 1023, 1651, 2123, 1722,
+               2888, 2010, 793 ,1521, 1927 ,2064, 1680 ,1882, 1790 ,960) 
+
+barrio_b3 <- c(1523 ,779, 2031 ,694 ,2900 ,774 ,1797, 878, 1850 ,960
+,1010, 1526 ,981 ,1685, 889 ,1063 ,1113 ,1754, 884 ,1009
+,1524 ,930 ,1319 ,1229, 1106, 1323, 1382, 1171, 1567, 1600)
+
+
+letras <- c()
+
+for(x in 0:(length(barrio_b1))){
+ letras[x] = "B1" 
+}
+
+for(x in 21 : 40){
+   letras[x] = "B2" 
+}
+
+for(x in 40 : 70){
+ letras[x] = "B3" 
+}
+ 
+data <- data.frame(barrio = letras, ingresos=c(barrio_b1 , barrio_b2, barrio_b3))
+
+data
+
+
+
+```
+## a) Obténgase una distribución de datos conjunta en intervalos de amplitud del 10% de la distribución, construir una tabla de frecuencias absolutas y relativas y definir cada representante de la clase.
+
+Para llevar a cabo esta tarea requeriremos el uso de varios comandos de R. Por una parte cut para dividir en intervalos los datos de los ingresos, por otra parte el comando hist que nos creara un histograma conteniendo los representantes de clase, por otra parte table que nos servirá para obtener las frecuencias absolutas y el resto son cálculos sencillos y operaciones con data frames.
+
+
+```{r}
+
+
+
+
+intervalosRenta <- cut(data$ingresos, breaks=seq(694, 2900, 220.6), include.lowest=TRUE, right=TRUE)
+
+data <- data.frame(interval = intervalosRenta, renta = data$ingresos, barrio = data$barrio)
+
+#tabla de frecuencias absolutas
+rep <- hist(data$renta, breaks=seq(694, 2900, 220.6), main="Histograma de las rentas")
+tabla_frecuencias <- data.frame(table(data$interval), rep$mids) 
+names(tabla_frecuencias) <- c("Intervalos", "Freq. Absol", "Representantes de clase")
+tabla_frecuencias <- data.frame(tabla_frecuencias, tabla_frecuencias$`Freq. Absol`/length(data$renta)) 
+names(tabla_frecuencias) <- c("Intervalos", "Freq. Absol", "Representantes de clase", "Freq relativa")
+tabla_frecuencias
+
+```
+
+## b) Explicar el tipo de muestreo realizado y calcular las medias muestrales y las desviaciones estándar muestrales, del conjunto y por barrios
+
+El muestreo realizado ha sido por agrupamientos. Se han buscado agrupaciones no homogéneas de residentes dentro de los barrios que serían los respectivos Clústers. De esta manera por ejemplo podemos comparar eficazmente el estado económico de cada grupo.
+
+Para calcular las medias muestrales y las desviaciones estandar harémos uso de los comandos mean y sd, a su vez que aggregate para construir las tablas.
+
+
+```{r}
+#MEDIAS Y SD GENERALES
+
+mean(data$renta)
+sd(data$renta)
+
+#MEDIAS Y SD POR BARRI  O
+
+tabla_medias <- aggregate(renta~barrio, data=data, mean )
+names(tabla_medias) <- c("Barrio", "Media renta")
+tabla_sd <- aggregate(renta~barrio, data=data, sd )
+names(tabla_sd) <- c("Barrio", "Desviacion estandar")
+
+tabla_final <- merge(tabla_medias, tabla_sd)
+tabla_final
+```
+
+## c) Encontrar la mediana, los cuartiles y el rango intercuartílico.
+
+Esto es muy fácil de realizar con r siempre y cuando se conozcan los comandos y conceptos adecuados.  Por una parte usaremos median para calcular a mediana general y por otra parte quantile para calcular los cuartiles, a su vez usaremos quantile para calcular el cuartil 75% y el 25% y restarlos para asi conseguir el recorrido intercuartílico.
+
+```{r}
+renta <- sort(data$renta)
+
+median(renta)
+quantile(renta)
+
+recorrido_intercuartil <- quantile(renta, 0.75) - quantile(renta, 0.25)
+recorrido_intercuartil
+
+```
+
+## d) Elaborar un histograma con los datos, diferenciando el total y los distintos barrios.
+
+```{r}
+plot(as.factor(data$barrio),data$renta )
+
+hist(data$renta, main="Histograma de la renta", xlab="Renta", ylab="Frecuencia")
+
+
+hist(data$renta[data$barrio=="B1"], main="Histograma renta en B1", xlab="Renta", ylab="Frecuencia") 
+
+hist(data$renta[data$barrio=="B2"], main="Histograma renta en B2", xlab="Renta", ylab="Frecuencia") 
+
+hist(data$renta[data$barrio=="B3"], main="Histograma renta en B3", xlab="Renta", ylab="Frecuencia") 
+
+
+```
+
+## e y f)  Construir un diagrama de caja y mostrar los casos atípicos y otros elementos relevantes del mismo.
+
+Para analizar los outliners crearemos un gráfico y usaremos su propiedad out. Como podemos observar estos valores son los 1750 y 2900 pertenecientes al B1 y B3 respectivamente. Por otra parte en el histograma podemos observar los valores fuera de rango son aquellos mas cercanos a los 3000 se pueden observar de forma sencilla debido la gran separación que existe entre estos y los valores cercanos a los 2200.
+
+```{r}
+graph <- plot(as.factor(data$barrio),data$renta )
+
+graph$out
+graph
+
+
+data$barrio[data$renta == 1750]
+data$barrio[data$renta == 2900]
+hist(data$renta, main="Histograma de la renta", xlab="Renta", ylab="Frecuencia")
+```
+## h) Utilizar la librería ggplot2 para visualizar los apartados d) y e) cuando se hace el análisis según barrios.
+
+```{r}
+ggplot(data = data, aes(barrio, renta)) + geom_boxplot() 
+ggplot(data = data, aes(intervalosRenta, renta)) + geom_boxplot() 
+```
+
+
+## i) Establecer justificadamente las conclusiones a partir de las medidas utilizadas.
+
+Por una parte podemos observar claramente que el barrio con mejor estado económico es el B2 siendo aquel con tanto las rentas mas altas asi como las mejores rentas en promedio. Por otra parte tenemos b2 cuya media es superior en b3, sin embargo son dos casos curiosos por una parte la desviación es muy pequeña en B1 por lo tanto existe poca dispersión en sus datos y es por ello que su media excede a b3 pero por otra parte en B3 existen casos con mejores rentas que en b1 aunque teniendo mayor dispersión.

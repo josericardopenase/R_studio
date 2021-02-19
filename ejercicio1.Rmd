@@ -1,0 +1,107 @@
+---
+title: "Ejercicio 4. Lab 4"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+setwd("~/Escritorio/")
+poblac <- read.csv("ejercicio4.csv", header=F, col.names=c("Edad", "Hombre", "Mujer"))
+
+attach(poblac)
+
+```
+
+## a)
+
+Para realizar este trabajo tendremos que tener en cuenta 2 cosas primero que los datos de los años no se han descargado ordenados (tendremos que tenerlo en consideración a la hora de realizar los gráficos) y la comparativa a realizar entre hombres y mujeres.
+
+A su vez hemos visualizado una tabla con los años máximos y mínimos segun mujer y hombre.
+```{r}
+plot(Edad[16:1], Hombre[16:1], xaxt="n", type="l", 
+     ylab="N. accidentes", xlab="Years", ylim=c(0, max(Hombre)))
+years <- as.character(seq(2003, 2018, 1))
+axis(side = 1, at=Edad[16:1], labels=years)
+points(Edad[16:1], Mujer[16:1], col="red", type="l")
+
+H_max <- Edad[which.max(Hombre)]; H_max
+H_min <- Edad[which.min(Hombre)]; H_min
+M_max <- Edad[which.max(Mujer)]; M_max
+M_min <- Edad[which.min(Mujer)]; M_min
+v_sing<- data.frame(Sexo=c("hombres", "mujeres"
+), max_year=c(H_max, M_max), min_year=c(H_min, M_min));v_sing
+```
+## b)
+
+Hemos realizado el mismo proceso anteriormente descrito pero con los datos totales proporcionados por la ISTAC.
+
+```{r}
+
+poblac <- read.csv("Ejercicio41.csv", header=F, col.names=c("Edad", "Hombre", "Mujer"))
+
+attach(poblac)
+
+plot(Edad[16:1], Hombre[16:1], xaxt="n", type="l", 
+     ylab="N. accidentes", xlab="Years", ylim=c(0, max(Hombre)))
+years <- as.character(seq(2003, 2018, 1))
+axis(side = 1, at=Edad[16:1], labels=years)
+points(Edad[16:1], Mujer[16:1], col="red", type="l")
+
+H_max <- Edad[which.max(Hombre)]; H_max
+H_min <- Edad[which.min(Hombre)]; H_min
+M_max <- Edad[which.max(Mujer)]; M_max
+M_min <- Edad[which.min(Mujer)]; M_min
+v_sing<- data.frame(Sexo=c("hombres", "mujeres"
+), max_year=c(H_max, M_max), min_year=c(H_min, M_min));v_sing
+
+```
+
+## c)
+
+Podemos observar que definitivamente se han producido bastantes mejoras en los accidentes sobretodo en el entorno masculino puesto que la diferencia entre los datos observadoa antes de 2007 y los de 2017 es de casi 10.000 accidentes. Esto es un claro signo de que se esta abordando el problema con soluciones eficaces.
+
+## d)
+
+Hemos usado la librería mgcv para predecir cuales son los sucesos que pasarán en 2019 y 2020 como podemos observar hemos realizado dos modelos uno lineal y otro cuadrático.
+
+Vemos una tendencia ascendente en las predicciones salvo en la cuadrática  masculina, que primero realiza un descenso y después vuelve a pronunciarse.
+```{r}
+library(mgcv)
+modelo1<-gam(Hombre~s(Edad))
+xv<-c(2019, 2020)
+yv<-predict(modelo1, list(Edad=xv))
+plot(Edad[16:1], Hombre[16:1], xaxt="n", type="l", 
+     ylab="N. accidentes", xlab="Years", ylim=c(0, max(Hombre)), xlim=c(2003, 2020))
+years <- as.character(seq(2003, 2018, 1))
+axis(side = 1, at=Edad[16:1], labels=years)
+points(Edad[16:1], Mujer[16:1], col="red", type="l")
+points(xv, yv, col="blue", lwd=2)
+
+lines(c(2018, xv), c(Hombre[Edad==2018], yv), col='lightblue')
+
+modelo2<-gam(Mujer~s(Edad))
+xv<-c(2019, 2020)
+yv<-predict(modelo2, list(Edad=xv))
+points(xv, yv, col="blue", lwd=2)
+lines(c(2018, xv), c(Mujer[Edad==2018], yv), col='lightblue')
+
+
+
+modelo1<-lm(Hombre~Edad+I(Edad^2))
+xv<-c(2019, 2020)
+yv<-predict(modelo1, list(Edad=xv))
+years <- as.character(seq(2003, 2018, 1))
+axis(side = 1, at=Edad[16:1], labels=years)
+points(Edad[16:1], Mujer[16:1], col="red", type="l")
+points(xv, yv, col="blue", lwd=2)
+
+lines(c(2018, xv), c(Hombre[Edad==2018], yv), col='green')
+
+modelo2<-lm(Mujer~Edad+I(Edad^2))
+xv<-c(2019, 2020)
+yv<-predict(modelo2, list(Edad=xv))
+points(xv, yv, col="blue", lwd=2)
+lines(c(2018, xv), c(Mujer[Edad==2018], yv), col='green')
+```
+

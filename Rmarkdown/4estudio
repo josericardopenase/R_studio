@@ -1,0 +1,195 @@
+---
+title: "Práctica2"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Preparación de la realización del estudio
+
+Primero cargamos la libreria carData y knitr. Necesarias para la realización de la práctica. Por último guardaremos el dataset en una variable llamada data y investigamos el contenido usando head, tail y summary que nos dejaran ver el principio, final y un resumen de los datos.
+
+```{r setup, include=FALSE}
+library(carData)
+library(knitr)
+
+data <- Leinhardt
+
+summary(data)
+head(data)
+tail(data)
+
+```
+
+# a) Solucionar los valores NA
+
+R hace un gran esfuerzo por añadir funcionalidades para limpiar los datos antes de su ánalisis. Es por esto que contiene una un función llamada na.omit que hará el trabajo por nosotros. Almacenamos los datos limpios en una variable p
+
+```{r}
+p <- na.omit(data)
+```
+
+# b y c) Encontrar el país con mayor y menor mortalidad infantil  y mayor y menor renta
+
+Para ello primero debemos de añadir una nueva columna que sean los diferentes paises. Para ello añadiremos a p una nueva columna llamada pais que contendra los diferentes nombres de los paises que antes de esto estarían como nombre de las filas.
+
+Una vez terminamos este tratamiento de datos será fácil calcular paises con mejor y peor renta y mayor y menor mortalidad infantil. Simplemente filtramos los paises por la renta maxima y minima usando la funcion which.
+
+```{r}
+row.names(p)
+
+p <- data.frame(p, pais = row.names(p))
+
+names(p) <- c("renta", "mortalidad_infantil", "region", "productor_petroleo", "pais")
+
+max(p$renta)
+
+pais_mayor_renta <- p$pais[which.max(p$renta)];pais_mayor_renta
+pais_menor_renta <- p$pais[which.min(p$renta)];pais_menor_renta
+
+pais_mayor_mi <- p$pais[which.max(p$mortalidad_infantil)];pais_mayor_mi
+pais_menor_mi <- p$pais[which.min(p$mortalidad_infantil)];pais_menor_mi
+```
+
+# d) Analizar las rentas per cápita y la mortalidad infantil en función del continente. Calcular las medias, medianas y desviación estándar correspondientes. 
+
+Para analizar la renta per capita y la mortalidad infantil en funcion del continente hemos creado unas graficas usando plot que muestran esta relación.  A su vez usando la funcion mean (media), median (mediana), y sd (standart desviation) y los filtros usando los corchetes y una expresion lógica hemos podido calcular con facilidad las medias y medianas de todos los continentes.
+
+```{r}
+
+plot(p$renta, p$mortalidad_infantil, 
+     xlab="renta", 
+     ylab="mortalidad infantil",
+     main="mortalidad en funcion de la renta")
+
+plot(p$region, p$renta, 
+     xlab="renta", 
+     ylab="mortalidad infantil",
+     main="renta en funcion del pais")
+
+plot(p$region, p$mortalidad_infantil, 
+     xlab="renta", 
+     ylab="mortalidad infantil",
+     main="renta en funcion del pais")
+
+#MEDIA Y MEDIANA GLOBALES DE RENTA PER CAPITA
+
+mean(p$renta)
+median(p$renta)
+sd(p$renta)
+
+#MEDIAS Y MEDIANAS EN CADA REGION
+
+mean(p$renta[p$region=="Asia"])
+mean(p$renta[p$region=="Africa"])
+mean(p$renta[p$region=="Europe"])
+mean(p$renta[p$region=="Americas"])
+
+median(p$renta[p$region=="Asia"])
+median(p$renta[p$region=="Africa"])
+median(p$renta[p$region=="Europe"])
+median(p$renta[p$region=="Americas"])
+
+#calculamos la desviacion estandar en cada region
+sd(p$renta[p$region=="Asia"])
+sd(p$renta[p$region=="Africa"])
+sd(p$renta[p$region=="Europe"])
+sd(p$renta[p$region=="Americas"])
+
+#MEDIA Y MEDIANA GLOBALES DE MORTALIDAD INFANTIL
+
+mean(p$mortalidad_infantil)
+median(p$mortalidad_infantil)
+sd(p$mortalidad_infantil)
+
+#MEDIAS Y MEDIANAS EN CADA REGION
+
+mean(p$mortalidad_infantil[p$region=="Asia"])
+mean(p$mortalidad_infantil[p$region=="Africa"])
+mean(p$mortalidad_infantil[p$region=="Europe"])
+mean(p$mortalidad_infantil[p$region=="Americas"])
+
+median(p$mortalidad_infantil[p$region=="Asia"])
+median(p$mortalidad_infantil[p$region=="Africa"])
+median(p$mortalidad_infantil[p$region=="Europe"])
+median(p$mortalidad_infantil[p$region=="Americas"])
+
+#calculamos la desviacion estandar en cada region
+sd(p$mortalidad_infantil[p$region=="Asia"])
+sd(p$mortalidad_infantil[p$region=="Africa"])
+sd(p$mortalidad_infantil[p$region=="Europe"])
+sd(p$mortalidad_infantil[p$region=="Americas"])
+
+```
+
+# e) Visualizar gráficamente, utilizando boxplot(), una comparativa de los datos de renta por un lado y de mortalidad infantil por otro. Establecer justificadamente las conclusiones. 
+
+Como observamos en el gráfico posterior como norma general conforme aumenta la renta per capita disminuye drásticamente los casos de mortalidad infantil. Es lógico pensar que el motivo es debido  a que en los paises con mayores recursos y capacidades monetarias los jovenes se dedican en gran parte al estudio y la violencia en las calles decrece ya que las necesidades principales en general estan cubiertas (comida, agua...) aunque esto no puede saberse con los datos que tenemos.
+
+A su vez, podemos observar a su vez la presencia de outliers en las zonas mas desarrolladas, esto puede deberse a países con gran diferencia entre ricos y pobres, puntos concretos de violencia, etc... un ejemplo de esto es Arabia Saudi uno de los países con mayor renta per capita  y a su vez el país con mayor mortalidad infantil como podemos observar debajo.
+
+
+```{r}
+boxplot(mortalidad_infantil~renta, data = p, main="mortalidad infantil por rpc", xlab="renta per capita", ylab ="mortalidad infantil")
+
+p$pais[which.max(p$mortalidad_infantil)]
+p$renta[p$pais == "Saudi.Arabia"]
+
+```
+
+# f) Encontrar si hay influencia significativa entre la renta per cápita y la mortalidad infantil en países no productore
+
+Para ello creamos un nuevo data frame con la renta y mortalidad infantil de los paises no productores de petroleo. A su vez mostraremos un plot de estos y la media de la mortalidad infantil en paises no productores y si productores. 
+
+Como observamos sigue abiendo una fuerte correlacion entre las rentas y la mortalidad infantil a si que este suceso no se da unicamente en los países productores de petroleo. 
+
+Sin embargo es curioso observar las medias de la mortalidad infantil en paises no productores y si productores. Los no productores tienen una cifra casi de la mitad que los que producen petroleo mostrando que aunque mientras menor renta seguirá siendo mayor la mortalidad infantil, la producción de petroleo influye drásticamente en el aumento de la mortalidad infantil.
+
+También podría analizarse de la siguiente manera, los países que producen petroleo son los que menor renta tienen y los que no los que mayor, sin embargo debajo se han calculado las medias de las rentas de ambos grupos y aunque la diferencia es palpable, no es abrumadora, mostrando que definitivamente la producción de petroleo influye de forma negativa en la mortalidad infantil.
+
+
+```{r}
+datos2 <- data.frame(renta = p$renta[p$productor_petroleo == "no"], mortalidad_infantil = p$mortalidad_infantil[p$productor_petroleo == "no"])
+
+plot(datos2$renta, datos2$mortalidad_infantil)
+
+mean(datos2$mortalidad_infantil)
+mean(p$mortalidad_infantil[p$productor_petroleo=="yes"])
+
+mean(datos2$renta)
+mean(p$renta[p$productor_petroleo=="yes"])
+```
+
+
+# g) realizar el apartado e en el continente Áfricano
+
+En África la mortalidad infantil independientemente de la renta no baja excepto en dos casos concretos cuya renta excede o iguala 1000 euros, sudafrica y libya. Esto es debido que por debajo de un cierto umbral donde no se pueden costear unas necesidades minimas para vivir la renta ya sea mas baja o mas alta no influye en la mortalidad infantil.
+
+
+```{r}
+datos_africa <- data.frame(pais = p$pais[p$region=="Africa"],renta = p$renta[p$region=="Africa"], mortalidad_infantil = p$mortalidad_infantil[p$region=="Africa"])
+
+
+boxplot(mortalidad_infantil~renta, data = datos_africa, main="mortalidad infantil por rpc áfrica", xlab="renta per capita", ylab ="mortalidad infantil")
+
+plot( datos_africa$renta, datos_africa$mortalidad_infantil,main="mortalidad infantil por rpc áfrica", xlab="renta per capita", ylab ="mortalidad infantil")
+
+datos_africa$pais[datos_africa$renta > 800]
+
+```
+
+
+# h) Visualizar los datos porcentuales por continente utilizando el comando pie()
+
+Como podemos observar la mayor parte de la gráfica la ocupa África uno de los continentes con mayor violencia y menor renta per capita, siguiendole asia, américa y por último europa, el que menos porción tiene.g
+
+```{r}
+mortalidad_infantil_sum = c()
+
+for(x in 0:length(unique(p$region))){
+        mortalidad_infantil_sum[x] = sum(p$mortalidad_infantil[p$region==unique(p$region)[x]])
+}
+
+pie(mortalidad_infantil_sum, labels = unique(p$region))
+```
+

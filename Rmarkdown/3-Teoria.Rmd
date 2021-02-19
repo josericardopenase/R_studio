@@ -1,0 +1,52 @@
+---
+title: "3-Teoría"
+output: pdf_document
+---
+
+## Setup inicial
+
+Para realizar este proyecto primero cargaremos la librería qcc ( quality control charts ) que nos dará una manera muy fácil y sin complicaciones de crear un diagrama de pareto, de esa manera no tenemos que estar haciendolo entero desde cero usango o bien los plots básicos que nos brinda r o ggplot2. A su vez cargaremos en memoría un nuevo data frame con los datos que nos han facilitado
+
+```{r setup, include=FALSE}
+library(qcc)
+
+
+data_num = c(40,15,19,27,58, 55, 28, 17, 25, 35, 10, 12)
+data_text = c("Direccion asistida y neumaticos", "Inyeccion deficiente", "Correas",
+              "Corrosion de la carroceria",
+              "problemas con la electronica y sensorización", "Electricidad y baterias",
+              "Barra estabilizadora y suspension", "Refrigeracion y sobrecalentamiento",
+              "Rodamientos", "Desgaste de los discos de freno", 
+              "Fugas de aceite", "Desajuste en la iluminacion y faros")  
+
+data <- data.frame(nombre = data_text, error = data_num)
+
+```
+
+## a y c) Construir un diagrama de pareto y evaluar los porcentajes de causas que se pueden explicar por categorías
+
+Para construir el diagrama de pareto usando qcc() es tan sencillo como usar la función pareto.chart, para ello primero realizaremos una attach de los datos, y los guardaremos en Tipo, una lista con nombres de columnas que seran el nombre del error.
+
+Una vez realizado esto simplemente llamaremos a la función pasandole de parámetro Tipo.
+
+```{r}
+
+attach(data)
+names(data)
+
+Tipo <- error
+names(Tipo) <- data$nombre
+pareto.chart(Tipo)
+
+```
+
+## b) Analizar gráficamente el problema y establecer conclusiones y recomendaciones para el/la Jefe de Taller y la organización de la actividad.
+
+Nuestra primera recomendación sería invertir dinero en la mejora de la electrónica y sensorización del automóvil, debido a que es el problema con mayor frecuencia de aparición, y que mas quejas puede llegar a producir. Sin embargo no es un problema que pueda causar grandes daños y perjuicios potencialmente.
+
+Acto seguido la electricidad y baterías, segundo problema mas frecuente y con mayor relevancia dentro de nuestro análisis. No solo es molesto tener que reparar la batería del coche o no poder arrancar el mismo sino que a su vez da una imagen de mala calidad de producto.
+
+Como última recomendación sería arreglar los problemas de la dirección asistida y neumáticos y el desgaste de los discos de freno. Problemas que si bien no aparecén tanto como los primeros, pueden causar grandes daños tanto del material como del conductor. Es importante, para mantener la confianza con el cliente y que no suceda ninguna desgracía, disminuir el porcentaje de estos dos fallos.
+
+El resto de problemas tienen una baja probabilidad de que ocurrán, aunque de los mas problemáticos consideraría las fugas de aceite, puesto que si estas se producen en la parte inferior del vehiculo y el liquido llega a los neumáticos o dispositivos de frenada pueden llegar a causar muertes potenciales. Si bien es el probléma que menos ocurre puede llegar a ser el mas peligroso.
+
